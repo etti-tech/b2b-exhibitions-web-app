@@ -18,7 +18,8 @@ const roleLabels: Record<UserRole, string> = {
 type SidebarLink = { href: string; label: string; icon: React.ComponentType<{ active: boolean }> };
 
 const organiserLinks: SidebarLink[] = [
-  { href: "/dashboard", label: "Events", icon: CalendarIcon },
+  { href: "/dashboard", label: "Dashboard", icon: HomeIcon },
+  { href: "/dashboard/events", label: "Events", icon: CalendarIcon },
   { href: "/dashboard/analytics", label: "Analytics", icon: ChartIcon },
   { href: "/dashboard/enquiries", label: "Enquiries", icon: InboxIcon },
   { href: "/dashboard/team", label: "Team", icon: TeamIcon },
@@ -27,17 +28,17 @@ const organiserLinks: SidebarLink[] = [
 ];
 
 const exhibitorLinks: SidebarLink[] = [
-  { href: "/dashboard", label: "Events", icon: CalendarIcon },
+  { href: "/dashboard", label: "Dashboard", icon: HomeIcon },
+  { href: "/dashboard/events", label: "Events", icon: CalendarIcon },
   { href: "/dashboard/bookings", label: "My Bookings", icon: TicketIcon },
   { href: "/dashboard/products", label: "Products", icon: CubeIcon },
   { href: "/dashboard/leads", label: "Leads", icon: LeadIcon },
   { href: "/dashboard/sponsors", label: "Sponsors", icon: SponsorIcon },
-  { href: "/dashboard/profile", label: "Profile", icon: UserIcon },
-  { href: "/dashboard/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 const visitorLinks: SidebarLink[] = [
-  { href: "/dashboard", label: "Events", icon: CalendarIcon },
+  { href: "/dashboard", label: "Dashboard", icon: HomeIcon },
+  { href: "/dashboard/events", label: "Events", icon: CalendarIcon },
   { href: "/dashboard/floor-map", label: "Floor Map", icon: MapIcon },
   { href: "/dashboard/my-badges", label: "My Badges", icon: BadgeIcon },
   { href: "/dashboard/smart-match", label: "Smart Match", icon: SparklesIcon },
@@ -56,130 +57,237 @@ const roleSidebarLinks: Record<UserRole, SidebarLink[]> = {
   vendor: organiserLinks,    // fallback for now
 };
 
-export default function DashboardSidebar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [roleDropdown, setRoleDropdown] = useState(false);
+export default function DashboardSidebar({
+  mobileOpen,
+  setMobileOpen,
+}: {
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
+}) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
+    if (typeof window === "undefined") return "system";
+    try {
+      const saved = window.localStorage.getItem("theme");
+      if (saved === "light" || saved === "dark") return saved;
+    } catch {}
+    return "system";
+  });
   const pathname = usePathname();
   const { user, logout, switchRole } = useAuth();
 
+  const applyTheme = (t: "light" | "dark" | "system") => {
+    setTheme(t);
+    if (t === "system") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.toggle("dark", prefersDark);
+      try { window.localStorage.removeItem("theme"); } catch {}
+    } else {
+      document.documentElement.classList.toggle("dark", t === "dark");
+      try { window.localStorage.setItem("theme", t); } catch {}
+    }
+  };
+
   if (!user) return null;
+
+  // Only collapse on desktop; mobile overlay always shows full sidebar
+  const isCollapsed = collapsed && !mobileOpen;
 
   const sidebar = (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="px-5 py-5">
-        <Link href="/" aria-label="Fingoh home">
-          <Image src="/logo.png" alt="Fingoh" width={130} height={36} priority className="h-9 w-auto dark:hidden" />
-          <Image src="/logo-white.png" alt="Fingoh" width={130} height={36} priority className="hidden h-9 w-auto dark:block" />
-        </Link>
-      </div>
-
-      {/* User card */}
-      <div className="mx-4 mb-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
-            {user.avatar}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">{user.name}</p>
-            <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{user.email}</p>
+      <div className={`mb-4 mt-4 ${isCollapsed ? "flex justify-center px-2" : "mx-4"}`}>
+        {isCollapsed ? (
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white select-none">
+            F
           </div>
-        </div>
-      </div>
-
-      {/* Role switcher */}
-      <div className="relative mx-4 mb-4">
-        <button
-          type="button"
-          onClick={() => setRoleDropdown(!roleDropdown)}
-          className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-        >
-          <span className="flex items-center gap-2">
-            <RoleBadge role={user.role} />
-            {roleLabels[user.role]}
-          </span>
-          <ChevronIcon open={roleDropdown} />
-        </button>
-        {roleDropdown && (
-          <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
-            {user.roles.map((role) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => {
-                  switchRole(role);
-                  setRoleDropdown(false);
-                }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-zinc-100 dark:hover:bg-zinc-700 ${
-                  role === user.role ? "bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300" : "text-zinc-700 dark:text-zinc-300"
-                }`}
-              >
-                <RoleBadge role={role} />
-                {roleLabels[role]}
-              </button>
-            ))}
-          </div>
+        ) : (
+          <Link href="/" aria-label="Fingoh home">
+            <Image src="/logo.png" alt="Fingoh" width={120} height={32} priority className="h-8 w-auto dark:hidden" />
+            <Image src="/logo-white.png" alt="Fingoh" width={120} height={32} priority className="hidden h-8 w-auto dark:block" />
+          </Link>
         )}
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 min-h-0 overflow-y-auto space-y-1 px-3">
         {(roleSidebarLinks[user.role] ?? organiserLinks).map((link) => {
-          const active = pathname === link.href;
+          const active = link.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(link.href);
           return (
             <Link
               key={link.href}
               href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+              onClick={() => { setMobileOpen(false); setUserMenuOpen(false); }}
+              title={isCollapsed ? link.label : undefined}
+              className={`flex items-center rounded-lg py-2.5 text-sm font-medium transition ${
+                isCollapsed ? "justify-center px-2" : "gap-3 px-3"
+              } ${
                 active
                   ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
                   : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
               }`}
             >
               <link.icon active={active} />
-              {link.label}
+              {!isCollapsed && link.label}
             </Link>
           );
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
-        <Link
-          href="/"
-          onClick={() => {
-            logout();
-            setMobileOpen(false);
-          }}
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-red-50 hover:text-red-600 dark:text-zinc-400 dark:hover:bg-red-500/10 dark:hover:text-red-400"
-        >
-          <LogoutIcon />
-          Logout
-        </Link>
+      {/* Bottom user menu */}
+      <div className="relative border-t border-zinc-200 p-3 dark:border-zinc-800">
+        {isCollapsed ? (
+          <button
+            type="button"
+            onClick={() => setUserMenuOpen((prev) => !prev)}
+            title={user.name}
+            className="flex w-full items-center justify-center rounded-xl py-1.5 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+              {user.avatar}
+            </span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setUserMenuOpen((prev) => !prev)}
+            className="flex w-full items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-left transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800/50 dark:hover:bg-zinc-800"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+              {user.avatar}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">{user.name}</span>
+              <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">{user.email}</span>
+            </span>
+            <ChevronIcon open={userMenuOpen} />
+          </button>
+        )}
+
+        {userMenuOpen && (
+          <div className={`absolute z-10 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800 ${
+            isCollapsed
+              ? "bottom-0 left-full ml-2 w-64"
+              : "bottom-[calc(100%+0.5rem)] left-3 right-3"
+          }`}>
+            {/* User info header */}
+            <div className="border-b border-zinc-100 px-3 py-3 dark:border-zinc-700/60">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                  {user.avatar}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">{user.name}</p>
+                  <p className="truncate text-xs text-zinc-400">{user.email}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Role switcher */}
+            {user.roles.length > 1 && (
+              <div className="border-b border-zinc-100 px-3 py-2.5 dark:border-zinc-700/60">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Switch Role</p>
+                <div className="space-y-0.5">
+                  {user.roles.map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => {
+                        switchRole(role);
+                        setUserMenuOpen(false);
+                      }}
+                      className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs font-semibold transition ${
+                        role === user.role
+                          ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                      }`}
+                    >
+                      <RoleBadge role={role} />
+                      <span className="flex-1">{roleLabels[role]}</span>
+                      {role === user.role && (
+                        <svg className="h-3.5 w-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Theme selector */}
+            <div className="border-b border-zinc-100 px-3 py-2.5 dark:border-zinc-700/60">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Appearance</p>
+              <div className="flex gap-1">
+                {(["light", "dark", "system"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => applyTheme(t)}
+                    className={`flex flex-1 items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 text-[11px] font-semibold transition ${
+                      theme === t
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+                    }`}
+                  >
+                    {t === "light" && <ThemeSunIcon active={theme === t} />}
+                    {t === "dark" && <ThemeMoonIcon active={theme === t} />}
+                    {t === "system" && <ThemeSystemIcon active={theme === t} />}
+                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <Link
+              href="/dashboard/profile"
+              onClick={() => {
+                setUserMenuOpen(false);
+                setMobileOpen(false);
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            >
+              <UserIcon active={false} />
+              Edit Profile
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              onClick={() => {
+                setUserMenuOpen(false);
+                setMobileOpen(false);
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            >
+              <SettingsIcon active={false} />
+              Settings
+            </Link>
+            <Link
+              href="/"
+              onClick={() => {
+                logout();
+                setUserMenuOpen(false);
+                setMobileOpen(false);
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+            >
+              <LogoutIcon />
+              Logout
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Mobile hamburger */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-30 rounded-lg border border-zinc-200 bg-white p-2 shadow-sm lg:hidden dark:border-zinc-700 dark:bg-zinc-900"
-        aria-label="Open menu"
-      >
-        <svg className="h-5 w-5 text-zinc-700 dark:text-zinc-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-        </svg>
-      </button>
-
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileOpen(false)}
+          onClick={() => { setMobileOpen(false); setUserMenuOpen(false); }}
         />
       )}
 
@@ -191,7 +299,7 @@ export default function DashboardSidebar() {
       >
         <button
           type="button"
-          onClick={() => setMobileOpen(false)}
+          onClick={() => { setMobileOpen(false); setUserMenuOpen(false); }}
           className="absolute right-3 top-4 rounded-lg p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
           aria-label="Close menu"
         >
@@ -203,7 +311,21 @@ export default function DashboardSidebar() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-72 shrink-0 border-r border-zinc-200 bg-white lg:block dark:border-zinc-800 dark:bg-zinc-900">
+      <aside className={`relative hidden shrink-0 border-r border-zinc-200 bg-white lg:block dark:border-zinc-800 dark:bg-zinc-900 transition-[width] duration-200 ${collapsed ? "w-16" : "w-72"}`}>
+        {/* Collapse/expand toggle on the border */}
+        <button
+          type="button"
+          onClick={() => setCollapsed((prev) => !prev)}
+          title={collapsed ? "Expand sidebar" : "Minimize sidebar"}
+          className="absolute -right-[16px] top-[21px] z-10 flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+        >
+          <svg
+            className={`h-3 w-3 transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 19.5-7.5-7.5 7.5-7.5" />
+          </svg>
+        </button>
         {sidebar}
       </aside>
     </>
@@ -228,6 +350,14 @@ function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+  );
+}
+
+function HomeIcon({ active }: { active: boolean }) {
+  return (
+    <svg className={`h-5 w-5 ${active ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
     </svg>
   );
 }
@@ -367,6 +497,30 @@ function NetworkIcon({ active }: { active: boolean }) {
   return (
     <svg className={`h-5 w-5 ${active ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+    </svg>
+  );
+}
+
+function ThemeSunIcon({ active }: { active: boolean }) {
+  return (
+    <svg className={`h-3.5 w-3.5 ${active ? "text-white" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+    </svg>
+  );
+}
+
+function ThemeMoonIcon({ active }: { active: boolean }) {
+  return (
+    <svg className={`h-3.5 w-3.5 ${active ? "text-white" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 8.002-4.248 9.72 9.72 0 0 1-1 0v-1.75Z" />
+    </svg>
+  );
+}
+
+function ThemeSystemIcon({ active }: { active: boolean }) {
+  return (
+    <svg className={`h-3.5 w-3.5 ${active ? "text-white" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3" />
     </svg>
   );
 }

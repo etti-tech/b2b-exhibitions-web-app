@@ -186,7 +186,7 @@ export const mockUsers: MockUser[] = [
   { id: "U-002", name: "Priya Sharma", email: "priya@organiser.com", password: "etti", roles: ["organiser"], role: "organiser", avatar: "PS", company: "Nexa Systems" },
   { id: "U-003", name: "Alex Walker", email: "alex@exhibitor.com", password: "etti", roles: ["exhibitor"], role: "exhibitor", avatar: "AW" },
   { id: "U-004", name: "Raam Kumar", email: "raam@visitor.com", password: "etti", roles: ["visitor"], role: "visitor", avatar: "RK", company: "VoltGrid" },
-  { id: "U-005", name: "Fingoh Admin", email: "admin@fingoh.ai", password: "etti", roles: ["organiser", "exhibitor", "visitor"], role: "vendor", avatar: "FI", company: "Fingoh AI" },
+  { id: "U-005", name: "Fingoh Admin", email: "admin@fingoh.ai", password: "etti", roles: ["organiser", "exhibitor", "visitor"], role: "exhibitor", avatar: "FI", company: "Fingoh AI" },
 ];
 
 /* ─── Mock Events ─── */
@@ -194,12 +194,12 @@ export const mockUsers: MockUser[] = [
 export const mockEvents: MockEvent[] = [
   {
     id: "EVT-001",
-    title: "FutureTech Expo 2025",
-    description: "Asia's largest B2B technology trade fair featuring industrial IoT, AI, and automation solutions.",
-    venue: "Pragati Maidan",
-    city: "New Delhi",
-    startDate: "2025-08-15",
-    endDate: "2025-08-18",
+    title: "Stainless Steel Promach Expo",
+    description: "Stainless Steel Process Engineering & Plant Machinery Expo is India’s only dedicated platform focused exclusively on stainless steel-based technologies for the process industry. From advanced plant systems and engineering solutions to high-performance machinery, the expo brings together the full spectrum of stakeholders who depend on stainless steel for its unmatched hygiene, durability, and corrosion resistance.",
+    venue: "BEC",
+    city: "Mumbai",
+    startDate: "2027-09-16",
+    endDate: "2027-09-18",
     status: "upcoming",
     exhibitors: 240,
     visitors: 12000,

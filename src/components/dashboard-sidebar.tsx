@@ -15,11 +15,22 @@ const roleLabels: Record<UserRole, string> = {
   vendor: "Vendor",
 };
 
-type SidebarLink = { href: string; label: string; icon: React.ComponentType<{ active: boolean }> };
+type SidebarLink = { href: string; label: string; icon: React.ComponentType<{ active: boolean }>; children?: { href: string; label: string }[] };
 
 const organiserLinks: SidebarLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: HomeIcon },
   { href: "/dashboard/events", label: "Events", icon: CalendarIcon },
+  {
+    href: "/dashboard/company-profile",
+    label: "Company Profile",
+    icon: BuildingIcon,
+    children: [
+      { href: "/dashboard/company-profile/business", label: "Business" },
+      { href: "/dashboard/company-profile/marketing", label: "Marketing" },
+      { href: "/dashboard/company-profile/finance", label: "Finance" },
+    ],
+  },
+  { href: "/dashboard/employees", label: "Employees", icon: UsersIcon },
   { href: "/dashboard/analytics", label: "Analytics", icon: ChartIcon },
   { href: "/dashboard/enquiries", label: "Enquiries", icon: InboxIcon },
   { href: "/dashboard/team", label: "Team", icon: TeamIcon },
@@ -30,6 +41,17 @@ const organiserLinks: SidebarLink[] = [
 const exhibitorLinks: SidebarLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: HomeIcon },
   { href: "/dashboard/events", label: "Events", icon: CalendarIcon },
+  {
+    href: "/dashboard/company-profile",
+    label: "Company Profile",
+    icon: BuildingIcon,
+    children: [
+      { href: "/dashboard/company-profile/business", label: "Business" },
+      { href: "/dashboard/company-profile/marketing", label: "Marketing" },
+      { href: "/dashboard/company-profile/finance", label: "Finance" },
+    ],
+  },
+  { href: "/dashboard/employees", label: "Employees", icon: UsersIcon },
   { href: "/dashboard/bookings", label: "My Bookings", icon: TicketIcon },
   { href: "/dashboard/products", label: "Products", icon: CubeIcon },
   { href: "/dashboard/leads", label: "Leads", icon: LeadIcon },
@@ -39,6 +61,16 @@ const exhibitorLinks: SidebarLink[] = [
 const visitorLinks: SidebarLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: HomeIcon },
   { href: "/dashboard/events", label: "Events", icon: CalendarIcon },
+  {
+    href: "/dashboard/company-profile",
+    label: "Company Profile",
+    icon: BuildingIcon,
+    children: [
+      { href: "/dashboard/company-profile/business", label: "Business" },
+      { href: "/dashboard/company-profile/marketing", label: "Marketing" },
+      { href: "/dashboard/company-profile/finance", label: "Finance" },
+    ],
+  },
   { href: "/dashboard/floor-map", label: "Floor Map", icon: MapIcon },
   { href: "/dashboard/my-badges", label: "My Badges", icon: BadgeIcon },
   { href: "/dashboard/smart-match", label: "Smart Match", icon: SparklesIcon },
@@ -66,13 +98,15 @@ export default function DashboardSidebar({
 }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [flyoutPos, setFlyoutPos] = useState<{ href: string; top: number; left: number } | null>(null);
   const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
-    if (typeof window === "undefined") return "system";
+    if (typeof window === "undefined") return "dark";
     try {
       const saved = window.localStorage.getItem("theme");
       if (saved === "light" || saved === "dark") return saved;
     } catch {}
-    return "system";
+    return "dark";
   });
   const pathname = usePathname();
   const { user, logout, switchRole } = useAuth();
@@ -113,6 +147,79 @@ export default function DashboardSidebar({
       {/* Nav links */}
       <nav className="flex-1 min-h-0 overflow-y-auto space-y-1 px-3">
         {(roleSidebarLinks[user.role] ?? organiserLinks).map((link) => {
+          if (link.children) {
+            const childActive = link.children.some((child) => pathname.startsWith(child.href));
+            const isExpanded = expandedGroups.has(link.href) || childActive;
+            return (
+              <div key={link.href}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    if (isCollapsed) {
+                      const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                      setFlyoutPos((prev) =>
+                        prev?.href === link.href ? null : { href: link.href, top: rect.top, left: rect.right + 8 }
+                      );
+                    } else {
+                      setFlyoutPos(null);
+                      setExpandedGroups((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(link.href)) next.delete(link.href);
+                        else next.add(link.href);
+                        return next;
+                      });
+                    }
+                  }}
+                  title={isCollapsed ? link.label : undefined}
+                  className={`flex w-full items-center rounded-lg py-2.5 text-sm font-medium transition ${
+                    isCollapsed ? "justify-center px-2" : "gap-3 px-3"
+                  } ${
+                    childActive
+                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                      : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  <link.icon active={childActive} />
+                  {!isCollapsed && (
+                    <>
+                      <span className="flex-1 text-left">{link.label}</span>
+                      <svg
+                        className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                        fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+
+                {/* Expanded inline sub-items (non-collapsed) */}
+                {isExpanded && !isCollapsed && (
+                  <div className="ml-8 mt-0.5 space-y-0.5">
+                    {link.children.map((child) => {
+                      const active = pathname === child.href || pathname.startsWith(child.href + "/");
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => { setMobileOpen(false); setUserMenuOpen(false); }}
+                          className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium transition ${
+                            active
+                              ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                              : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                          }`}
+                        >
+                          <span className={`mr-2 h-1.5 w-1.5 rounded-full ${active ? "bg-indigo-500" : "bg-zinc-300 dark:bg-zinc-600"}`} />
+                          {child.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           const active = link.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(link.href);
           return (
             <Link
@@ -315,9 +422,9 @@ export default function DashboardSidebar({
         {/* Collapse/expand toggle on the border */}
         <button
           type="button"
-          onClick={() => setCollapsed((prev) => !prev)}
+          onClick={() => { setCollapsed((prev) => !prev); setFlyoutPos(null); }}
           title={collapsed ? "Expand sidebar" : "Minimize sidebar"}
-          className="absolute -right-[16px] top-[21px] z-10 flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="absolute -right-[16px] top-[20px] z-10 flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
         >
           <svg
             className={`h-3 w-3 transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`}
@@ -328,6 +435,54 @@ export default function DashboardSidebar({
         </button>
         {sidebar}
       </aside>
+
+      {/* Collapsed sidebar flyout — rendered outside asides to escape overflow clipping */}
+      {flyoutPos && collapsed && !mobileOpen && (() => {
+        const activeLink = (roleSidebarLinks[user.role] ?? organiserLinks).find(
+          (l) => l.children && l.href === flyoutPos.href
+        );
+        if (!activeLink?.children) return null;
+        return (
+          <>
+            <div
+              className="fixed inset-0 z-[60]"
+              onClick={() => setFlyoutPos(null)}
+            />
+            <div
+              className="fixed z-[70] min-w-52 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
+              style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            >
+              <div className="border-b border-zinc-100 px-3 py-2.5 dark:border-zinc-700/60">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">{activeLink.label}</p>
+              </div>
+              {activeLink.children.map((child) => {
+                const active = pathname === child.href || pathname.startsWith(child.href + "/");
+                return (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    onClick={() => {
+                      setFlyoutPos(null);
+                      setMobileOpen(false);
+                      setUserMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition ${
+                      active
+                        ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                    }`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      active ? "bg-indigo-500" : "bg-zinc-300 dark:bg-zinc-600"
+                    }`} />
+                    {child.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        );
+      })()}
     </>
   );
 }
@@ -447,6 +602,22 @@ function SponsorIcon({ active }: { active: boolean }) {
   return (
     <svg className={`h-5 w-5 ${active ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+    </svg>
+  );
+}
+
+function BuildingIcon({ active }: { active: boolean }) {
+  return (
+    <svg className={`h-5 w-5 ${active ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+    </svg>
+  );
+}
+
+function UsersIcon({ active }: { active: boolean }) {
+  return (
+    <svg className={`h-5 w-5 ${active ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400"}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
     </svg>
   );
 }

@@ -228,7 +228,7 @@ function ExhibitorOverview() {
     [userId]
   );
   const confirmedBookings = userBookings.filter(
-    (b) => b.status === "confirmed" || b.status === "approved"
+    (b) => b.status === "confirmed"
   );
   const confirmedEventIds = new Set(confirmedBookings.map((b) => b.eventId));
 

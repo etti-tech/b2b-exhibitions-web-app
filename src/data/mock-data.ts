@@ -128,7 +128,7 @@ export type EventVisitor = {
 
 export type BoothStyle = "bare_space" | "shell_scheme";
 export type BoothPosition = "corner" | "middle" | "island" | "end_cap";
-export type BookingStatus = "pending" | "approved" | "rejected" | "payment_pending" | "confirmed" | "cancelled";
+export type BookingStatus = "pending" | "payment_pending" | "confirmed" | "rejected" | "cancelled";
 
 export type ExhibitorBooking = {
   id: string;
@@ -163,7 +163,8 @@ export type ExhibitorSponsor = {
   tier: "platinum" | "gold" | "silver" | "bronze";
   companyName: string;
   amount: string;
-  status: "active" | "pending";
+  status: "active" | "pending" | "rejected";
+  rejectedReason?: string;
 };
 
 export type ExhibitorLead = {
@@ -179,6 +180,53 @@ export type ExhibitorLead = {
   notes?: string;
 };
 
+/* ─── Employee types ─── */
+
+export type EmployeeStatus = "active" | "inactive" | "on_leave";
+export type EmployeeRole = "admin" | "manager" | "coordinator" | "executive" | "intern";
+
+export type Employee = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string; // initials
+  department: string;
+  designation: string;
+  role: EmployeeRole;
+  status: EmployeeStatus;
+  joinDate: string;
+  location: string;
+  reportingTo?: string;
+};
+
+/* ─── Mock Employees ─── */
+
+export const mockEmployees: Employee[] = [
+  { id: "EMP-001", name: "Arjun Mehta",      email: "arjun.mehta@fingoh.ai",     phone: "+91 98200 11001", avatar: "AM", department: "Leadership",   designation: "Chief Executive Officer",      role: "admin",       status: "active",   joinDate: "15 Jan 2018", location: "Mumbai",    reportingTo: undefined },
+  { id: "EMP-002", name: "Priya Sharma",     email: "priya.sharma@fingoh.ai",     phone: "+91 98200 11002", avatar: "PS", department: "Leadership",   designation: "Chief Operating Officer",      role: "admin",       status: "active",   joinDate: "20 Feb 2018", location: "Mumbai",    reportingTo: "Arjun Mehta" },
+  { id: "EMP-003", name: "Rahul Gupta",      email: "rahul.gupta@fingoh.ai",      phone: "+91 98200 11003", avatar: "RG", department: "Sales",        designation: "VP — Sales & Partnerships",    role: "manager",     status: "active",   joinDate: "10 Mar 2019", location: "Delhi NCR", reportingTo: "Arjun Mehta" },
+  { id: "EMP-004", name: "Sneha Iyer",       email: "sneha.iyer@fingoh.ai",       phone: "+91 98200 11004", avatar: "SI", department: "Marketing",    designation: "Head of Marketing",            role: "manager",     status: "active",   joinDate: "05 Jun 2019", location: "Mumbai",    reportingTo: "Priya Sharma" },
+  { id: "EMP-005", name: "Karan Joshi",      email: "karan.joshi@fingoh.ai",      phone: "+91 98200 11005", avatar: "KJ", department: "Technology",   designation: "Engineering Lead",             role: "manager",     status: "active",   joinDate: "12 Aug 2019", location: "Bengaluru", reportingTo: "Priya Sharma" },
+  { id: "EMP-006", name: "Meera Nair",       email: "meera.nair@fingoh.ai",       phone: "+91 98200 11006", avatar: "MN", department: "Finance",      designation: "Finance Manager",              role: "manager",     status: "active",   joinDate: "01 Nov 2019", location: "Mumbai",    reportingTo: "Arjun Mehta" },
+  { id: "EMP-007", name: "Aditya Rao",       email: "aditya.rao@fingoh.ai",       phone: "+91 98200 11007", avatar: "AR", department: "Sales",        designation: "Senior Sales Executive",       role: "executive",   status: "active",   joinDate: "14 Jan 2020", location: "Delhi NCR", reportingTo: "Rahul Gupta" },
+  { id: "EMP-008", name: "Divya Krishnan",   email: "divya.krishnan@fingoh.ai",   phone: "+91 98200 11008", avatar: "DK", department: "Marketing",    designation: "Digital Marketing Executive",  role: "executive",   status: "active",   joinDate: "03 Mar 2020", location: "Mumbai",    reportingTo: "Sneha Iyer" },
+  { id: "EMP-009", name: "Vikram Singh",     email: "vikram.singh@fingoh.ai",     phone: "+91 98200 11009", avatar: "VS", department: "Technology",   designation: "Backend Engineer",             role: "executive",   status: "active",   joinDate: "22 Apr 2020", location: "Bengaluru", reportingTo: "Karan Joshi" },
+  { id: "EMP-010", name: "Anita Desai",      email: "anita.desai@fingoh.ai",      phone: "+91 98200 11010", avatar: "AD", department: "HR",           designation: "HR Manager",                   role: "manager",     status: "active",   joinDate: "10 Jun 2020", location: "Mumbai",    reportingTo: "Priya Sharma" },
+  { id: "EMP-011", name: "Rohit Verma",      email: "rohit.verma@fingoh.ai",      phone: "+91 98200 11011", avatar: "RV", department: "Technology",   designation: "Frontend Engineer",            role: "executive",   status: "on_leave", joinDate: "18 Jul 2020", location: "Bengaluru", reportingTo: "Karan Joshi" },
+  { id: "EMP-012", name: "Nisha Patel",      email: "nisha.patel@fingoh.ai",      phone: "+91 98200 11012", avatar: "NP", department: "Sales",        designation: "Sales Coordinator",            role: "coordinator", status: "active",   joinDate: "02 Sep 2020", location: "Delhi NCR", reportingTo: "Rahul Gupta" },
+  { id: "EMP-013", name: "Suresh Kumar",     email: "suresh.kumar@fingoh.ai",     phone: "+91 98200 11013", avatar: "SK", department: "Operations",   designation: "Operations Manager",           role: "manager",     status: "active",   joinDate: "15 Oct 2020", location: "Mumbai",    reportingTo: "Priya Sharma" },
+  { id: "EMP-014", name: "Lakshmi Rajan",    email: "lakshmi.rajan@fingoh.ai",    phone: "+91 98200 11014", avatar: "LR", department: "Finance",      designation: "Accounts Executive",           role: "executive",   status: "active",   joinDate: "07 Jan 2021", location: "Mumbai",    reportingTo: "Meera Nair" },
+  { id: "EMP-015", name: "Abhishek Tiwari",  email: "abhishek.tiwari@fingoh.ai",  phone: "+91 98200 11015", avatar: "AT", department: "Technology",   designation: "DevOps Engineer",              role: "executive",   status: "active",   joinDate: "19 Feb 2021", location: "Bengaluru", reportingTo: "Karan Joshi" },
+  { id: "EMP-016", name: "Pallavi Menon",    email: "pallavi.menon@fingoh.ai",    phone: "+91 98200 11016", avatar: "PM", department: "Marketing",    designation: "Content Strategist",           role: "coordinator", status: "active",   joinDate: "05 Apr 2021", location: "Mumbai",    reportingTo: "Sneha Iyer" },
+  { id: "EMP-017", name: "Girish Nanda",     email: "girish.nanda@fingoh.ai",     phone: "+91 98200 11017", avatar: "GN", department: "Operations",   designation: "Event Coordinator",            role: "coordinator", status: "inactive", joinDate: "12 Jun 2021", location: "Delhi NCR", reportingTo: "Suresh Kumar" },
+  { id: "EMP-018", name: "Tanvi Shah",       email: "tanvi.shah@fingoh.ai",       phone: "+91 98200 11018", avatar: "TS", department: "HR",           designation: "HR Executive",                 role: "executive",   status: "active",   joinDate: "08 Aug 2021", location: "Mumbai",    reportingTo: "Anita Desai" },
+  { id: "EMP-019", name: "Manish Kapoor",    email: "manish.kapoor@fingoh.ai",    phone: "+91 98200 11019", avatar: "MK", department: "Sales",        designation: "Business Development Intern",  role: "intern",      status: "active",   joinDate: "03 Jan 2022", location: "Delhi NCR", reportingTo: "Rahul Gupta" },
+  { id: "EMP-020", name: "Deepika Reddy",    email: "deepika.reddy@fingoh.ai",    phone: "+91 98200 11020", avatar: "DR", department: "Technology",   designation: "QA Engineer",                  role: "executive",   status: "on_leave", joinDate: "21 Mar 2022", location: "Bengaluru", reportingTo: "Karan Joshi" },
+  { id: "EMP-021", name: "Harish Balasubramanian", email: "harish.b@fingoh.ai",   phone: "+91 98200 11021", avatar: "HB", department: "Technology",   designation: "Mobile Developer",             role: "executive",   status: "active",   joinDate: "14 May 2022", location: "Bengaluru", reportingTo: "Karan Joshi" },
+  { id: "EMP-022", name: "Smita Walke",      email: "smita.walke@fingoh.ai",      phone: "+91 98200 11022", avatar: "SW", department: "Marketing",    designation: "Marketing Intern",             role: "intern",      status: "active",   joinDate: "01 Jul 2022", location: "Mumbai",    reportingTo: "Sneha Iyer" },
+];
+
 /* ─── Mock Users (credentials for all roles) ─── */
 
 export const mockUsers: MockUser[] = [
@@ -186,7 +234,7 @@ export const mockUsers: MockUser[] = [
   { id: "U-002", name: "Priya Sharma", email: "priya@organiser.com", password: "etti", roles: ["organiser"], role: "organiser", avatar: "PS", company: "Nexa Systems" },
   { id: "U-003", name: "Alex Walker", email: "alex@exhibitor.com", password: "etti", roles: ["exhibitor"], role: "exhibitor", avatar: "AW" },
   { id: "U-004", name: "Raam Kumar", email: "raam@visitor.com", password: "etti", roles: ["visitor"], role: "visitor", avatar: "RK", company: "VoltGrid" },
-  { id: "U-005", name: "Fingoh Admin", email: "admin@fingoh.ai", password: "etti", roles: ["organiser", "exhibitor", "visitor"], role: "exhibitor", avatar: "FI", company: "Fingoh AI" },
+  { id: "U-005", name: "Fingoh Admin", email: "admin@fingoh.ai", password: "etti", roles: ["organiser", "exhibitor", "visitor"], role: "exhibitor", avatar: "ET", company: "Fingoh Technologies" },
 ];
 
 /* ─── Mock Events ─── */
@@ -653,12 +701,19 @@ export const mockNetworkingContacts: NetworkingContact[] = [
 /* ─── Exhibitor Bookings ─── */
 
 export const mockExhibitorBookings: ExhibitorBooking[] = [
-  { id: "BK-001", userId: "U-001", eventId: "EVT-001", boothStyle: "shell_scheme", boothPosition: "corner", sqMeters: 18, hallPreference: "Hall 1", status: "confirmed", submittedDate: "2025-06-10", approvedDate: "2025-06-15", totalPrice: "$4,200" },
-  { id: "BK-002", userId: "U-001", eventId: "EVT-004", boothStyle: "bare_space", boothPosition: "island", sqMeters: 36, hallPreference: "Hall 2", status: "pending", submittedDate: "2025-07-20", totalPrice: "$7,800" },
-  { id: "BK-003", userId: "U-002", eventId: "EVT-001", boothStyle: "shell_scheme", boothPosition: "middle", sqMeters: 12, hallPreference: "Hall 2", status: "approved", submittedDate: "2025-06-12", approvedDate: "2025-06-18", totalPrice: "$2,800" },
-  { id: "BK-004", userId: "U-002", eventId: "EVT-002", boothStyle: "bare_space", boothPosition: "end_cap", sqMeters: 24, hallPreference: "Hall 1", status: "confirmed", submittedDate: "2025-05-01", approvedDate: "2025-05-08", totalPrice: "$5,400" },
-  { id: "BK-005", userId: "U-004", eventId: "EVT-001", boothStyle: "shell_scheme", boothPosition: "corner", sqMeters: 18, hallPreference: "Hall 1", status: "rejected", submittedDate: "2025-06-20", rejectedReason: "Hall 1 is fully booked", totalPrice: "$4,200" },
-  { id: "BK-006", userId: "U-001", eventId: "EVT-003", boothStyle: "bare_space", boothPosition: "middle", sqMeters: 24, hallPreference: "Hall 3", status: "confirmed", submittedDate: "2025-01-05", approvedDate: "2025-01-10", totalPrice: "$5,400" },
+  { id: "BK-001", userId: "U-001", eventId: "EVT-001", boothStyle: "shell_scheme", boothPosition: "corner",   sqMeters: 18, hallPreference: "Hall 1", status: "confirmed",       submittedDate: "2025-06-10", approvedDate: "2025-06-15", totalPrice: "$4,200" },
+  { id: "BK-002", userId: "U-001", eventId: "EVT-004", boothStyle: "bare_space",   boothPosition: "island",   sqMeters: 36, hallPreference: "Hall 2", status: "pending",           submittedDate: "2025-07-20", totalPrice: "$7,800" },
+  { id: "BK-003", userId: "U-002", eventId: "EVT-001", boothStyle: "shell_scheme", boothPosition: "middle",   sqMeters: 12, hallPreference: "Hall 2", status: "payment_pending",    submittedDate: "2025-06-12", approvedDate: "2025-06-18", totalPrice: "$2,800" },
+  { id: "BK-004", userId: "U-002", eventId: "EVT-002", boothStyle: "bare_space",   boothPosition: "end_cap",  sqMeters: 24, hallPreference: "Hall 1", status: "confirmed",         submittedDate: "2025-05-01", approvedDate: "2025-05-08", totalPrice: "$5,400" },
+  { id: "BK-005", userId: "U-004", eventId: "EVT-001", boothStyle: "shell_scheme", boothPosition: "corner",   sqMeters: 18, hallPreference: "Hall 1", status: "rejected",          submittedDate: "2025-06-20", rejectedReason: "Hall 1 is fully booked", totalPrice: "$4,200" },
+  { id: "BK-006", userId: "U-001", eventId: "EVT-003", boothStyle: "bare_space",   boothPosition: "middle",   sqMeters: 24, hallPreference: "Hall 3", status: "confirmed",         submittedDate: "2025-01-05", approvedDate: "2025-01-10", totalPrice: "$5,400" },
+  // U-005 (Fingoh Technologies — exhibitor) — one booking per status
+  { id: "BK-007", userId: "U-005", eventId: "EVT-001", boothStyle: "shell_scheme", boothPosition: "corner",   sqMeters: 18, hallPreference: "Hall 1", status: "confirmed",         submittedDate: "2025-06-05", approvedDate: "2025-06-10", totalPrice: "$4,200", specialRequirements: "Power socket at booth corner" },
+  { id: "BK-008", userId: "U-005", eventId: "EVT-002", boothStyle: "bare_space",   boothPosition: "island",   sqMeters: 36, hallPreference: "Hall 2", status: "payment_pending",    submittedDate: "2025-05-18", approvedDate: "2025-05-25", totalPrice: "$8,640" },
+  { id: "BK-009", userId: "U-005", eventId: "EVT-004", boothStyle: "shell_scheme", boothPosition: "end_cap",  sqMeters: 24, hallPreference: "Hall 1", status: "pending",           submittedDate: "2025-07-14", totalPrice: "$5,760", specialRequirements: "Demo counter and product shelving" },
+  { id: "BK-010", userId: "U-005", eventId: "EVT-006", boothStyle: "bare_space",   boothPosition: "middle",   sqMeters: 12, hallPreference: "Hall 2", status: "payment_pending",   submittedDate: "2025-04-01", approvedDate: "2025-04-07", totalPrice: "$2,880" },
+  { id: "BK-011", userId: "U-005", eventId: "EVT-003", boothStyle: "shell_scheme", boothPosition: "corner",   sqMeters: 18, hallPreference: "Hall 3", status: "rejected",          submittedDate: "2025-01-20", rejectedReason: "Booth size not available in Hall 3 for this event", totalPrice: "$4,320" },
+  { id: "BK-012", userId: "U-005", eventId: "EVT-005", boothStyle: "bare_space",   boothPosition: "island",   sqMeters: 48, hallPreference: "Hall 1", status: "cancelled",         submittedDate: "2025-09-10", totalPrice: "$11,520", specialRequirements: "Large machinery display — needs 4m ceiling clearance" },
 ];
 
 /* ─── Exhibitor Products ─── */
@@ -669,15 +724,36 @@ export const mockExhibitorProducts: ExhibitorProduct[] = [
   { id: "PRD-003", userId: "U-001", eventId: "EVT-003", name: "AutoPilot Module v3", category: "Autonomous Systems", description: "Retrofit autonomous navigation module for warehouse vehicles", image: "from-orange-500 to-red-600" },
   { id: "PRD-004", userId: "U-002", eventId: "EVT-001", name: "NexaConnect Hub", category: "Networking", description: "Mesh networking hub for industrial plant connectivity", image: "from-emerald-500 to-teal-600" },
   { id: "PRD-005", userId: "U-002", eventId: "EVT-002", name: "GreenMonitor Suite", category: "Sustainability", description: "Real-time energy and carbon footprint monitoring platform", image: "from-lime-500 to-green-600" },
+  // Fingoh Technologies (U-005) — Stainless Steel Products
+  { id: "PRD-006", userId: "U-005", eventId: "EVT-001", name: "SS304 Seamless Tubes", category: "Stainless Steel Tubes", description: "ASTM A269 seamless austenitic stainless steel tubes for high-pressure industrial piping systems", image: "from-slate-400 to-zinc-600" },
+  { id: "PRD-007", userId: "U-005", eventId: "EVT-001", name: "SS316L Welded Pipes", category: "Stainless Steel Pipes", description: "Low-carbon 316L grade welded pipes with superior corrosion resistance for chemical and marine applications", image: "from-zinc-400 to-slate-600" },
+  { id: "PRD-008", userId: "U-005", eventId: "EVT-001", name: "Duplex SS Flanges", category: "Flanges & Fittings", description: "Duplex 2205 stainless steel flanges with enhanced strength-to-weight ratio, suitable for offshore and petrochemical environments", image: "from-neutral-500 to-stone-700" },
+  { id: "PRD-009", userId: "U-005", eventId: "EVT-001", name: "SS Hexagonal Bars", category: "Long Products", description: "Cold-drawn SS 304 & 316 hexagonal bars in custom lengths, ideal for precision machining and fastener manufacturing", image: "from-gray-500 to-zinc-700" },
+  { id: "PRD-010", userId: "U-005", eventId: "EVT-001", name: "Mirror Finish Sheets", category: "Stainless Steel Sheets", description: "No.8 mirror polished SS 304 sheets for architectural cladding, decorative panels and food processing equipment", image: "from-sky-400 to-indigo-500" },
+  { id: "PRD-011", userId: "U-005", eventId: "EVT-003", name: "SS Wire Mesh Coils", category: "Wire & Mesh", description: "Fine and coarse weave SS 316 wire mesh for filtration, sieving and safety screens in industrial processing plants", image: "from-teal-500 to-cyan-600" },
+  { id: "PRD-012", userId: "U-005", eventId: "EVT-003", name: "Sanitary Butt-Weld Fittings", category: "Flanges & Fittings", description: "FDA-compliant SS 316L butt-weld elbows, tees and reducers designed for hygienic food, dairy and pharmaceutical piping", image: "from-emerald-400 to-teal-600" },
+  { id: "PRD-013", userId: "U-005", eventId: "EVT-004", name: "SS Coils — Hot Rolled", category: "Stainless Steel Coils", description: "Wide-width hot-rolled SS 201/304 coils for automotive body panels and white goods manufacturing", image: "from-amber-500 to-orange-600" },
+  { id: "PRD-014", userId: "U-005", eventId: "EVT-004", name: "Electropolished Cylinders", category: "Custom Fabrication", description: "Precision electropolished stainless steel cylinders used in semiconductor wafer handling and ultra-clean process environments", image: "from-violet-500 to-purple-600" },
 ];
 
 /* ─── Exhibitor Sponsors ─── */
 
 export const mockExhibitorSponsors: ExhibitorSponsor[] = [
-  { id: "SP-001", userId: "U-001", eventId: "EVT-001", tier: "gold", companyName: "TechVentures Capital", amount: "$15,000", status: "active" },
-  { id: "SP-002", userId: "U-001", eventId: "EVT-001", tier: "silver", companyName: "InnoFund Partners", amount: "$8,000", status: "pending" },
-  { id: "SP-003", userId: "U-001", eventId: "EVT-003", tier: "platinum", companyName: "MegaCorp Industries", amount: "$25,000", status: "active" },
-  { id: "SP-004", userId: "U-002", eventId: "EVT-001", tier: "bronze", companyName: "StartupBoost", amount: "$3,000", status: "active" },
+  { id: "SP-001", userId: "U-001", eventId: "EVT-001", tier: "gold",     companyName: "TechVentures Capital",    amount: "$15,000", status: "active" },
+  { id: "SP-002", userId: "U-001", eventId: "EVT-001", tier: "silver",   companyName: "InnoFund Partners",       amount: "$8,000",  status: "pending" },
+  { id: "SP-003", userId: "U-001", eventId: "EVT-003", tier: "platinum", companyName: "MegaCorp Industries",     amount: "$25,000", status: "active" },
+  { id: "SP-004", userId: "U-002", eventId: "EVT-001", tier: "bronze",   companyName: "StartupBoost",           amount: "$3,000",  status: "active" },
+  // Fingoh Technologies (U-005) — sponsors across events, all approval states
+  { id: "SP-005", userId: "U-005", eventId: "EVT-001", tier: "platinum", companyName: "Gulf Steel Holdings",     amount: "$40,000", status: "active" },
+  { id: "SP-006", userId: "U-005", eventId: "EVT-001", tier: "gold",     companyName: "IndoMetal Group",         amount: "$20,000", status: "active" },
+  { id: "SP-007", userId: "U-005", eventId: "EVT-001", tier: "silver",   companyName: "Bharat Alloys Ltd",       amount: "$10,000", status: "pending" },
+  { id: "SP-008", userId: "U-005", eventId: "EVT-001", tier: "bronze",   companyName: "FastFit Fabricators",     amount: "$4,500",  status: "pending" },
+  { id: "SP-009", userId: "U-005", eventId: "EVT-001", tier: "silver",   companyName: "PipeWorld Exports",       amount: "$9,000",  status: "rejected", rejectedReason: "Competing brand conflict with existing platinum sponsor" },
+  { id: "SP-010", userId: "U-005", eventId: "EVT-003", tier: "platinum", companyName: "EuroSteel AG",            amount: "$35,000", status: "active" },
+  { id: "SP-011", userId: "U-005", eventId: "EVT-003", tier: "gold",     companyName: "NordAlloy Partners",      amount: "$18,000", status: "pending" },
+  { id: "SP-012", userId: "U-005", eventId: "EVT-003", tier: "bronze",   companyName: "Staincare Coatings",      amount: "$3,500",  status: "rejected", rejectedReason: "Booth category mismatch — sponsor profile does not align with exhibition theme" },
+  { id: "SP-013", userId: "U-005", eventId: "EVT-004", tier: "gold",     companyName: "AsiaTube Corporation",    amount: "$22,000", status: "active" },
+  { id: "SP-014", userId: "U-005", eventId: "EVT-004", tier: "silver",   companyName: "Precision Metals Japan",  amount: "$11,000", status: "pending" },
 ];
 
 /* ─── Exhibitor Leads ─── */
@@ -689,6 +765,19 @@ export const mockExhibitorLeads: ExhibitorLead[] = [
   { id: "EL-004", userId: "U-001", eventId: "EVT-001", visitorName: "Chen Wei", visitorEmail: "chen@globallink.cn", visitorCompany: "GlobalLink China", interest: "IoT platform integration", score: "Cold", capturedDate: "2025-08-17" },
   { id: "EL-005", userId: "U-002", eventId: "EVT-001", visitorName: "Dmitri Volkov", visitorEmail: "dmitri@innovate.ru", visitorCompany: "Innovate Labs", interest: "NexaConnect Hub pilot", score: "Warm", capturedDate: "2025-08-15" },
   { id: "EL-006", userId: "U-002", eventId: "EVT-002", visitorName: "Hans Muller", visitorEmail: "hans@greenbau.de", visitorCompany: "GreenBau GmbH", interest: "GreenMonitor enterprise license", score: "Hot", capturedDate: "2025-07-01" },
+  // Fingoh Technologies (U-005) — Stainless Steel leads
+  { id: "EL-007", userId: "U-005", eventId: "EVT-001", visitorName: "Ravi Subramaniam", visitorEmail: "ravi@steelcraft.in", visitorCompany: "SteelCraft Industries", interest: "SS304 Seamless Tubes — bulk procurement (20 MT/month)", score: "Hot", capturedDate: "2025-08-15", notes: "Procurement head. Needs sample shipment first. Target close Q4." },
+  { id: "EL-008", userId: "U-005", eventId: "EVT-001", visitorName: "Lars Eriksson", visitorEmail: "lars@norsepipe.no", visitorCompany: "NorsePipe AS", interest: "SS316L Welded Pipes for offshore platform upgrade", score: "Hot", capturedDate: "2025-08-15", notes: "Requires DNV certification docs. Very serious buyer — follow up within 48 hrs." },
+  { id: "EL-009", userId: "U-005", eventId: "EVT-001", visitorName: "Priya Chandrasekaran", visitorEmail: "priya@pharmaline.com", visitorCompany: "PharmaLine Solutions", interest: "Sanitary Butt-Weld Fittings for new API plant", score: "Hot", capturedDate: "2025-08-16", notes: "FDA compliance is mandatory. Needs ISO 9001 & 3A Sanitary Standard certificates." },
+  { id: "EL-010", userId: "U-005", eventId: "EVT-001", visitorName: "Mohamed Al-Farsi", visitorEmail: "mfarsi@gulfmetal.ae", visitorCompany: "Gulf Metal Trading", interest: "Mirror Finish Sheets — architectural project in Dubai", score: "Warm", capturedDate: "2025-08-16", notes: "Interior cladding for 3 high-rise towers. Will share project spec sheet next week." },
+  { id: "EL-011", userId: "U-005", eventId: "EVT-001", visitorName: "Zhang Wei", visitorEmail: "zhangwei@sinoforge.cn", visitorCompany: "Sino Forge Ltd", interest: "SS Hexagonal Bars — machining components", score: "Warm", capturedDate: "2025-08-17", notes: "Comparing quotes from 3 suppliers. Price sensitive." },
+  { id: "EL-012", userId: "U-005", eventId: "EVT-001", visitorName: "Olga Petrov", visitorEmail: "olga@filtrotech.ru", visitorCompany: "FiltroTech Russia", interest: "SS Wire Mesh Coils for industrial filtration", score: "Warm", capturedDate: "2025-08-17" },
+  { id: "EL-013", userId: "U-005", eventId: "EVT-001", visitorName: "Carlos Mendez", visitorEmail: "cmendez@automotriz.mx", visitorCompany: "Automotriz del Norte", interest: "SS Coils Hot Rolled — body panel stamping", score: "Cold", capturedDate: "2025-08-18", notes: "Early-stage evaluation. Budget not yet approved." },
+  { id: "EL-014", userId: "U-005", eventId: "EVT-001", visitorName: "Anita Patel", visitorEmail: "anita@archidesign.in", visitorCompany: "ArchiDesign Studio", interest: "Mirror Finish & decorative SS sheets for interior projects", score: "Cold", capturedDate: "2025-08-18" },
+  { id: "EL-015", userId: "U-005", eventId: "EVT-003", visitorName: "Thomas Becker", visitorEmail: "thomas@chemflow.de", visitorCompany: "ChemFlow GmbH", interest: "Duplex SS Flanges — chemical reactor piping", score: "Hot", capturedDate: "2026-03-11", notes: "Needs ATEX-rated material traceability certs. Project start: May 2026." },
+  { id: "EL-016", userId: "U-005", eventId: "EVT-003", visitorName: "Fiona O'Sullivan", visitorEmail: "fiona@dairytech.ie", visitorCompany: "DairyTech Ireland", interest: "Sanitary Butt-Weld Fittings for milk processing line expansion", score: "Warm", capturedDate: "2026-03-12", notes: "3A & EHEDG compliance required. Site visit arranged for June." },
+  { id: "EL-017", userId: "U-005", eventId: "EVT-004", visitorName: "Kenji Nakamura", visitorEmail: "kenji@semitool.jp", visitorCompany: "SemiTool Japan", interest: "Electropolished Cylinders for wafer handling robots", score: "Hot", capturedDate: "2025-11-20", notes: "Very high-value order potential. Requires Ra ≤ 0.2 µm surface finish spec. Send quote ASAP." },
+  { id: "EL-018", userId: "U-005", eventId: "EVT-004", visitorName: "Sarah Okonkwo", visitorEmail: "sarah@packlines.ng", visitorCompany: "PackLines Nigeria", interest: "SS304 Seamless Tubes for food packaging machinery", score: "Cold", capturedDate: "2025-11-21" },
 ];
 
 /* ─── Floor Map Data (organiser-uploaded) ─── */

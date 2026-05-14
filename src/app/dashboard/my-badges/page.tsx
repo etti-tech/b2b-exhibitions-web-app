@@ -42,7 +42,7 @@ export default function MyBadgesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-6xl">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">My E-Badges</h1>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">

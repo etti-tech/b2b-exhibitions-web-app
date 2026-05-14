@@ -9,8 +9,7 @@ import "./globals.css";
 const themeInitScript = `(() => {
   try {
     const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const shouldUseDark = savedTheme ? savedTheme === "dark" : prefersDark;
+    const shouldUseDark = savedTheme ? savedTheme === "dark" : true;
     document.documentElement.classList.toggle("dark", shouldUseDark);
   } catch {}
 })();`;

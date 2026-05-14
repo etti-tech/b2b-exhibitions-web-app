@@ -13,8 +13,9 @@ const tierColors: Record<string, string> = {
 };
 
 const statusStyles = {
-  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
-  pending: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+  active:   "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+  pending:  "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+  rejected: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300",
 };
 
 export default function SponsorsPage() {
@@ -27,9 +28,12 @@ export default function SponsorsPage() {
 
   const allEvents = mockEvents.filter((e) => e.status === "upcoming" || e.status === "live");
 
-  const totalActive = sponsors.filter((s) => s.status === "active").length;
-  const totalPending = sponsors.filter((s) => s.status === "pending").length;
-  const totalAmount = sponsors.reduce((sum, s) => sum + parseInt(s.amount.replace(/[^0-9]/g, ""), 10), 0);
+  const totalActive  = sponsors.filter((s) => s.status === "active").length;
+  const totalPending  = sponsors.filter((s) => s.status === "pending").length;
+  const totalRejected = sponsors.filter((s) => s.status === "rejected").length;
+  const totalAmount   = sponsors
+    .filter((s) => s.status !== "rejected")
+    .reduce((sum, s) => sum + parseInt(s.amount.replace(/[^0-9]/g, ""), 10), 0);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,14 +80,18 @@ export default function SponsorsPage() {
       </div>
 
       {/* Stats */}
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Active Sponsors</p>
           <p className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalActive}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Pending</p>
+          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Awaiting Approval</p>
           <p className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">{totalPending}</p>
+        </div>
+        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Rejected</p>
+          <p className="mt-1 text-2xl font-bold text-red-500 dark:text-red-400">{totalRejected}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Total Sponsorship</p>
@@ -153,17 +161,28 @@ export default function SponsorsPage() {
               </h2>
               <div className="space-y-3">
                 {eventSponsors.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                    <div className="flex items-center gap-3">
+                  <div key={s.id} className={`flex items-start justify-between rounded-2xl border bg-white p-4 dark:bg-zinc-900 ${
+                      s.status === "rejected"
+                        ? "border-red-200 dark:border-red-500/30"
+                        : "border-zinc-200 dark:border-zinc-800"
+                    }`}>
+                    <div className="flex items-start gap-3">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase ${tierColors[s.tier]}`}>{s.tier}</span>
                       <div>
                         <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{s.companyName}</p>
                         <span className={`mt-0.5 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[s.status]}`}>
-                          {s.status === "active" ? "Active" : "Pending"}
+                          {s.status === "active" ? "Approved" : s.status === "pending" ? "Awaiting Approval" : "Rejected"}
                         </span>
+                        {s.status === "rejected" && s.rejectedReason && (
+                          <p className="mt-1 text-xs text-red-500 dark:text-red-400">{s.rejectedReason}</p>
+                        )}
                       </div>
                     </div>
-                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{s.amount}</p>
+                    <p className={`text-sm font-bold ${
+                      s.status === "rejected"
+                        ? "text-zinc-400 line-through dark:text-zinc-600"
+                        : "text-indigo-600 dark:text-indigo-400"
+                    }`}>{s.amount}</p>
                   </div>
                 ))}
               </div>
